@@ -33,9 +33,34 @@ if [[ -z "$DATABASE_URL" ]]; then
   exit 1
 fi
 
-function wait_for_request {
+ELASTALERT_URL="${2:-}"
+
+if [[ -z "$ELASTALERT_URL" ]]; then
+  echo_with_banner "No ELASTALERT_URL was provided"
+  exit 1
+fi
+
+function wait_for_request_elasticsearch {
   for _ in {1..10}; do
     if curl -f "$DATABASE_URL" > /dev/null 2>&1; then
+      return 0
+    else
+      sleep 1
+    fi
+  done
+
+  echo_with_banner \
+    "Unable to reach Elasticsearch server, please check DATABASE_URL and your database server." \
+    "If necessary, correct the URL. Then, deploy again."
+
+  return 1
+}
+
+function wait_for_request_elastalert {
+  # remove port from URL
+  local URL=$(echo "$ELASTALERT_URL" | awk -F':' '{print $1":"$2}')
+  for _ in {1..10}; do
+    if curl -f $URL > /dev/null 2>&1; then
       return 0
     else
       sleep 1
@@ -66,7 +91,8 @@ print 6.2 if es_version.start_with?('6.2.')
 print 6.3 if es_version.start_with?('6.3.')
 print 6.4 if es_version.start_with?('6.4.')"
 
-wait_for_request
+wait_for_request_elasticsearch
+wait_for_request_elastalert
 
 KIBANA_NEEDED_VERSION="$(curl -fsSL "$DATABASE_URL" | ruby -e "$KIBANA_VERSION_PARSER")"
 

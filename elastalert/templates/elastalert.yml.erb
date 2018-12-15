@@ -1,0 +1,5 @@
+<% elastalert_url = URI(ENV['ELASTALERT_URL']) %>
+<% elastalert_port = "#{elastalert_url.port}" %>
+# Elastalert config (serverHost must not have scheme)
+elastalert-kibana-plugin.serverHost: "<%= elastalert_url.host %>"
+elastalert-kibana-plugin.serverPort: "<%= elastalert_port %>"

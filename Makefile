@@ -42,6 +42,9 @@ endif
 
 -include $(TAG)/config.mk
 
+# import elastalert config
+include elastalert/config.mk
+
 
 # By default, we'll push the tag we're building, and the 'latest' tag if said
 # tag is indeed the latest one. Set PUSH_TAGS in config.mk (or $(TAG)/config.mk)
@@ -70,12 +73,21 @@ export TAG
 
 # Define actual usable targets
 
+all: push
+
+# This recipe always runs before commands that require it due to dependancies
+# Uses the AWS CLI:
+authenticate:
+	# Retrieve the login command to use to authenticate your Docker client to your registry.
+	eval $$\(aws ecr get-login --no-include-email --region us-east-1 \)
+	@echo "authenticated"
+
 # TODO - Should push depend on test instead? Ideally push is only going to be used by CI anyway.
 push: build
 	set -e ; \
 	for registry in $(PUSH_REGISTRIES); do \
 		for tag in $(PUSH_TAGS); do \
-			docker tag "$(REGISTRY)/$(REPOSITORY):$(TAG)" "$${registry}/$(REPOSITORY):$${tag}"; \
+			docker tag "$(REPOSITORY):$(TAG)" "$${registry}/$(REPOSITORY):$${tag}"; \
 			docker push "$${registry}/$(REPOSITORY):$${tag}"; \
 		done \
 	done
@@ -85,10 +97,10 @@ test: build
 	set -e ; if [ -f 'test.sh' ]; then ./test.sh; break; fi
 
 
-build: $(TAG)/Dockerfile
-	docker build -t "$(REGISTRY)/$(REPOSITORY):$(TAG)" -f "$(TAG)/Dockerfile" .
+build: $(TAG)/Dockerfile authenticate
+	docker build -t "$(REPOSITORY):$(TAG)" -f "$(TAG)/Dockerfile" .
 ifeq "$(TAG)" "$(LATEST_TAG)"
-	docker tag "$(REGISTRY)/$(REPOSITORY):$(TAG)" "$(REGISTRY)/$(REPOSITORY):latest"
+	docker tag "$(REPOSITORY):$(TAG)" "$(REGISTRY)/$(REPOSITORY):latest"
 endif
 
 
@@ -117,5 +129,5 @@ $(TAG):
 	mkdir -p "$(TAG)"
 
 
-.PHONY: push test build $(TAG)/Dockerfile
-.DEFAULT_GOAL := test
+.PHONY: all push test build $(TAG)/Dockerfile
+# .DEFAULT_GOAL := test

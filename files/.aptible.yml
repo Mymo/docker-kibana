@@ -1,2 +1,2 @@
 before_release:
- - /usr/bin/check-es-version.sh "$DATABASE_URL"
+ - /usr/bin/check-es-version.sh "$DATABASE_URL" "$ELASTALERT_URL"

@@ -12,6 +12,8 @@ ENV KIBANA_VERSION <%= ENV.fetch 'KIBANA_VERSION' %>
 ENV KIBANA_DOWNLOAD <%= ENV.fetch 'KIBANA_DOWNLOAD' %>
 ENV KIBANA_SHA1SUM <%= ENV.fetch 'KIBANA_SHA1SUM' %>
 
+ENV ELASTALERT_KIBANA_PLUGIN_DOWNLOAD <%= ENV.fetch 'ELASTALERT_KIBANA_PLUGIN_DOWNLOAD' %>
+
 
 RUN curl -fsSL "${KIBANA_DOWNLOAD}" -o ./installer.tar.gz && \
     echo "${KIBANA_SHA1SUM}  installer.tar.gz" | sha1sum -c - && \
@@ -23,7 +25,7 @@ RUN curl -fsSL "${KIBANA_DOWNLOAD}" -o ./installer.tar.gz && \
 RUN rm /etc/nginx/sites-enabled/*
 ADD templates/sites-enabled /
 
-RUN rm "/opt/kibana/config/kibana.yml" 
+RUN rm "/opt/kibana/config/kibana.yml"
 ADD ${TAG}/templates/kibana.yml.erb /opt/kibana/config/
 
 <% if ENV["TAG"] =="4.4" %>
@@ -41,6 +43,15 @@ ADD files/.aptible.yml /.aptible/
 # them when deploying, but they'll be run in test.sh
 ADD test /tmp/test
 ADD ${TAG}/test /tmp/test
+
+# Install elastalert-kibana-plugin (plugin install will fail if no config file exists)
+RUN touch /opt/kibana/config/kibana.yml && \
+    /opt/kibana/bin/kibana-plugin install ${ELASTALERT_KIBANA_PLUGIN_DOWNLOAD}
+
+# Add Elastalert Default ENV
+ENV ELASTALERT_URL http://localhost:3030
+
+ADD elastalert/templates/elastalert.yml.erb /opt/kibana/config/
 
 EXPOSE 80
 
