@@ -101,7 +101,7 @@ push: build
 test: build
 	set -e ; if [ -f 'test.sh' ]; then ./test.sh; break; fi
 
-
+# the "." at the end of the docker build command signifies the workingdir of the build for the relative COPY/ADD commands
 build: $(TAG)/Dockerfile authenticate
 	docker build -t "$(REPOSITORY):$(TAG)" -f "$(TAG)/Dockerfile" .
 ifeq "$(TAG)" "$(LATEST_TAG)"
