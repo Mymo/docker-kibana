@@ -21,7 +21,7 @@ ruby -e "$AUTH_PARSER" || {
 }
 
 # -r is to load a libary, -T 2 is the interpolation trim mode see `man erb` for details
-erb -T 2 -r uri -r base64 ./kibana.erb > /etc/nginx/sites-enabled/kibana || {
+erb -T 2 -r uri -r base64 "/kibana.erb" > "/etc/nginx/sites-enabled/kibana" || {
   echo "Error creating nginx configuration from Elasticsearch url '$DATABASE_URL'"
   exit 1
 }
