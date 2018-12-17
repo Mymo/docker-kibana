@@ -7,7 +7,7 @@ To build and push this Dockerfile to AWS ECR simply:
 - update the "latest.mk" `LATEST_TAG`
 - run `make`
 
-Note: You **must** have AWS command line tools installed and configured. This procedure is easily found on google.
+Note: You **must** have AWS command line tools installed and configured (and you must have ECR push privileges). This procedure is easily found on google.
 
 - It is possible to build the Dockerfile without pushing to AWS
   - run `make build` OR
