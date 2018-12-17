@@ -16,7 +16,7 @@ endif
 TAG ?= $(LATEST_TAG)
 
 
-# Import configuration. config.mk must set the variables REGISTRY
+# Import configuration. config.mk must set the variables REGISTRY, REGION,
 # and REPOSITORY so the Makefile knows what to call your image.
 # You can also set PUSH_REGISTRIES and PUSH_TAGS to customize
 # what will be pushed.
@@ -32,6 +32,10 @@ endif
 
 ifndef REPOSITORY
 $(error REPOSITORY *must* be set in config.mk)
+endif
+
+ifndef REGION
+$(error REGION *must* be set in config.mk)
 endif
 
 
@@ -68,6 +72,7 @@ PUSH_REGISTRIES ?= $(REGISTRY)
 
 export REGISTRY
 export REPOSITORY
+export REGION
 export TAG
 
 
@@ -79,7 +84,7 @@ all: push
 # Uses the AWS CLI:
 authenticate:
 	# Retrieve the login command to use to authenticate your Docker client to your registry.
-	eval $$\(aws ecr get-login --no-include-email --region us-east-1 \)
+	eval $$\(aws ecr get-login --no-include-email --region $(REGION) \)
 	@echo "authenticated"
 
 # TODO - Should push depend on test instead? Ideally push is only going to be used by CI anyway.
