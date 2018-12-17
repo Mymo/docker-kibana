@@ -1,10 +1,22 @@
-# [WIP]
+Kibana as an Aptible App with elastalert bundled.
 
-# ![](https://gravatar.com/avatar/11d3bc4c3163e3d238d558d5c9d98efe?s=64) aptible/kibana
+## Building
+To build and push this Dockerfile to AWS ECR simply:
+- clone the repo
+- make your necessary changes to the Dockerfile and scripts in the project root directory
+- update the "latest.mk" `LATEST_TAG`
+- run `make`
 
-[![Docker Repository on Quay.io](https://quay.io/repository/aptible/kibana/status)](https://quay.io/repository/aptible/kibana)
+Note: You **must** have AWS command line tools installed and configured. This procedure is easily found on google.
 
-Kibana as an Aptible App.
+- It is possible to build the Dockerfile without pushing to AWS
+  - run `make build` OR
+  - run your own `docker build ...`
+
+## Deployment
+
+Follow the instructions at:
+- https://hellomymo.atlassian.net/wiki/spaces/MYMO/pages/33128449/How+to+Directly+Deploy+a+Docker+Image+to+Aptible
 
 ## Security considerations
 
@@ -41,18 +53,25 @@ To deploy Kibana as an App on Enclave:
      (this is the connection string presented in the Aptible dashboard when you
      select your Elasticsearch instance).
 
+    * The `ELASTALERT_URL` must be created as an endpoint on the elastalert app
+      - Use an Aptible internal endpoint and copy its hostname
+      - The port in the `ELASTALERT_URL` should be 80 (yes even though the exposed port of the elastalert endpoint is 3030)
+
     ```
     aptible deploy \
      --app "$HANDLE" \
      --docker-image "aptible/kibana:$KIBANA_VERSION" \
      "AUTH_CREDENTIALS=username:password" \
-     "DATABASE_URL=https://user:password@example.com" \
+     "DATABASE_URL=https://user:password@example.com:<port>" \
+     "ELASTALERT_URL=https://example.com:80" \
      FORCE_SSL=true
     ```
 
 If this fails, review the troubleshooting instructions below.
 
 3. Create an Endpoint to make the Kibana app accessible:
+
+I (Ryan Mahaffey) recommend creating this endpoint on the aptible frontend using our own domain and security certs then going onto GoDaddy to properly point the DNS.
 
     ```
     aptible endpoints:https:create \
@@ -114,16 +133,3 @@ through][1] as an introduction.
 To jump in to a view of your recent log messages, you can start by clicking the
 "Discover" tab, which should default to viewing all log messages, most recent
 first.
-
-
-## Copyright and License
-
-MIT License, see [LICENSE](LICENSE.md) for details.
-
-Copyright (c) 2014 [Aptible](https://www.aptible.com) and contributors.
-
-[<img src="https://s.gravatar.com/avatar/c386daf18778552e0d2f2442fd82144d?s=60" style="border-radius: 50%;" alt="@aaw" />](https://github.com/aaw)
-
-
-  [0]: https://www.aptible.com/documentation/enclave/tutorials/expose-web-app.html
-  [1]: http://www.elasticsearch.org/guide/en/kibana/current/using-kibana-for-the-first-time.html
