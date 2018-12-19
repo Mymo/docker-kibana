@@ -49,6 +49,7 @@ RUN touch /opt/kibana/config/kibana.yml && \
     /opt/kibana/bin/kibana-plugin install ${ELASTALERT_KIBANA_PLUGIN_DOWNLOAD}
 
 # Add Elastalert Default ENV
+# Through Aptible this only works on port 80, so this "default" is not valid in our current use case
 ENV ELASTALERT_URL http://localhost:3030
 
 ADD elastalert/templates/elastalert.yml.erb /opt/kibana/config/
